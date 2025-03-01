@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalDrop - Offline Peer Discovery & File Sharing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+            background-color: white;
+            color: black;
+        }
+        .dark {
+            background: #1e1e1e;
+            color: white;
+        }
+        .btn {
+            padding: 10px 15px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .toggle-btn { background-color: #ff9800; color: white; }
+        .toggle-btn:hover { background-color: #e68900; }
+        .discover-btn, .select-btn, .upload-btn { background-color: #4caf50; color: white; }
+        .discover-btn:hover, .select-btn:hover, .upload-btn:hover { background-color: #388e3c; }
+        .remove-btn { background-color: red; color: white; margin-left: 10px; }
+        .remove-btn:hover { background-color: darkred; }
+        #drop-zone {
+            width: 80%;
+            margin: auto;
+            height: 150px;
+            border: 3px dashed #007bff;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #007bff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        #drop-zone:hover { background-color: #e9f5ff; }
+        .file-item {
+            margin: 5px 0;
+            padding: 10px;
+            background: #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+        .peer-item {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Toggle Light/Dark Mode</h1>
+    <button id="theme-toggle" class="btn toggle-btn">🌗 Toggle Theme</button>
+
+    <h1>📂 Select or Drag & Drop Files</h1>
+    <div id="drop-zone">Drag and drop files here or click to browse</div>
+    <input type="file" id="file-input" multiple hidden>
+    <button class="btn select-btn" id="select-files">Select Files</button>
+    <div id="file-list"><h3>Selected Files:</h3></div>
+    <button class="btn upload-btn" id="upload-files">Upload Files</button>
+
+    <h1>🔍 Discover Peers</h1>
+    <button id="discover-peers" class="btn discover-btn">🔍 Discover Peers</button>
+    <ul id="peer-list"></ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const themeToggleBtn = document.getElementById("theme-toggle");
+            const discoverPeersBtn = document.getElementById("discover-peers");
+            const peerList = document.getElementById("peer-list");
+            const dropZone = document.getElementById("drop-zone");
+            const fileInput = document.getElementById("file-input");
+            const fileList = document.getElementById("file-list");
+            const selectFilesBtn = document.getElementById("select-files");
+            const uploadBtn = document.getElementById("upload-files");
+
+            let isDarkMode = false;
+            let peers = new Set();
+            let selectedFiles = [];
+
+            themeToggleBtn.addEventListener("click", () => {
+                isDarkMode = !isDarkMode;
+                document.body.className = isDarkMode ? "dark" : "";
+            });
+
+            const ws = new WebSocket("ws://localhost:8080");
+            ws.onopen = () => {
+                console.log("Connected to WebSocket Server!");
+                ws.send(JSON.stringify({ type: "discover" }));
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "peer-list") {
+                    data.peers.forEach(peer => peers.add(peer));
+                    renderPeers();
+                }
+                if (data.type === "ping-request") {
+                    ws.send(JSON.stringify({ type: "pong", from: data.from }));
+                }
+            };
+
+            discoverPeersBtn.addEventListener("click", () => {
+                ws.send(JSON.stringify({ type: "discover" }));
+            });
+
+            function renderPeers() {
+                peerList.innerHTML = "";
+                peers.forEach(peer => {
+                    const li = document.createElement("li");
+                    li.classList.add("peer-item");
+                    li.textContent = `Peer: ${peer}`;
+
+                    const pingBtn = document.createElement("button");
+                    pingBtn.classList.add("btn");
+                    pingBtn.textContent = "Ping";
+                    pingBtn.onclick = () => pingPeer(peer);
+
+                    const connectBtn = document.createElement("button");
+                    connectBtn.classList.add("btn");
+                    connectBtn.textContent = "Connect";
+                    connectBtn.onclick = () => connectToPeer(peer);
+
+                    li.appendChild(pingBtn);
+                    li.appendChild(connectBtn);
+                    peerList.appendChild(li);
+                });
+            }
+
+            function pingPeer(peer) {
+                ws.send(JSON.stringify({ type: "ping", peerID: peer }));
+            }
+
+            function connectToPeer(peer) {
+                ws.send(JSON.stringify({ type: "connect", peerID: peer }));
+                alert(`Attempting to connect to ${peer}`);
+            }
+
+            selectFilesBtn.addEventListener("click", () => fileInput.click());
+            fileInput.addEventListener("change", (event) => addFiles(Array.from(event.target.files)));
+            dropZone.addEventListener("dragover", (event) => event.preventDefault());
+            dropZone.addEventListener("drop", (event) => {
+                event.preventDefault();
+                addFiles(Array.from(event.dataTransfer.files));
+            });
+
+            function addFiles(files) {
+                files.forEach(file => {
+                    if (!selectedFiles.some(f => f.name === file.name)) {
+                        selectedFiles.push(file);
+                        displayFiles();
+                    }
+                });
+            }
+
+            function displayFiles() {
+                fileList.innerHTML = "<h3>Selected Files:</h3>";
+                selectedFiles.forEach(file => {
+                    const fileItem = document.createElement("div");
+                    fileItem.classList.add("file-item");
+                    fileItem.innerHTML = `<span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>`;
+                    fileList.appendChild(fileItem);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

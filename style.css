@@ -1,0 +1,127 @@
+/* 🌗 Default Theme (Dark Mode) */
+body {
+    background: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 🌞 Light Mode */
+body.light-mode {
+    background: #f4f4f4;
+    color: black;
+}
+
+/* 🎛️ Theme Toggle Button */
+.theme-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: background 0.3s;
+}
+
+.theme-btn:hover {
+    background: #555;
+}
+
+/* 🔍 Discover Peers Button */
+.discover-btn {
+    background: linear-gradient(45deg, #ff8c00, #ff2e63);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 6px rgba(255, 46, 99, 0.4);
+}
+
+.discover-btn:hover {
+    background: linear-gradient(45deg, #ff2e63, #ff8c00);
+    transform: scale(1.05);
+}
+
+/* 📜 Peer List */
+#peer-list {
+    margin-top: 15px;
+    list-style-type: none;
+    padding: 0;
+}
+
+#peer-list li {
+    background: #1e1e1e;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #ffffff;
+    box-shadow: 0px 2px 4px rgba(255, 46, 99, 0.2);
+}
+
+/* 🌞 Light Mode Adjustments */
+body.light-mode #peer-list li {
+    background: #ffffff;
+    color: black;
+}
+/* Default: Dark Mode */
+body {
+    background: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Light Mode */
+body.light-mode {
+    background: #f4f4f4;
+    color: black;
+}
+
+/* Theme Toggle Button */
+.theme-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: background 0.3s;
+}
+
+.theme-btn:hover {
+    background: #555;
+}
+
+/* Peer List */
+#peer-list {
+    margin-top: 15px;
+    list-style-type: none;
+    padding: 0;
+}
+
+#peer-list li {
+    background: #1e1e1e;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #ffffff;
+    box-shadow: 0px 2px 4px rgba(255, 46, 99, 0.2);
+}
+
+/* Light Mode Adjustments */
+body.light-mode #peer-list li {
+    background: #ffffff;
+    color: black;
+}
